@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Howick Feedlot Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --earth: #2C2416;
+  --soil: #3D3120;
+  --bark: #5C4A2A;
+  --straw: #C8A96E;
+  --grass: #4A7C3F;
+  --grass-light: #6AAF5E;
+  --grass-pale: #D6EDCF;
+  --sky: #2B4C7E;
+  --sky-light: #4A7DBF;
+  --cream: #F7F2E8;
+  --parchment: #EDE4D0;
+  --rust: #B85C2A;
+  --rust-light: #D4783E;
+  --amber: #D4940A;
+  --amber-pale: #FBF0D0;
+  --red: #9B2335;
+  --red-pale: #F5DCDE;
+  --teal: #1E6B6B;
+  --teal-pale: #D0EDED;
+  --text: #1A1208;
+  --text-mid: #4A3F2A;
+  --text-muted: #8A7A5A;
+  --border: rgba(92,74,42,0.18);
+  --border-strong: rgba(92,74,42,0.35);
+  --shadow: 0 2px 12px rgba(44,36,22,0.10);
+  --shadow-lg: 0 8px 32px rgba(44,36,22,0.16);
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Instrument Sans', sans-serif;
+  background: var(--parchment);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+/* ── SIDEBAR ── */
+.app { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 228px;
+  flex-shrink: 0;
+  background: var(--earth);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  padding: 22px 20px 16px;
+  border-bottom: 1px solid rgba(200,169,110,0.15);
+}
+.sidebar-logo h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  color: var(--straw);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+.sidebar-logo span {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-family: 'DM Mono', monospace;
+}
+
+.sidebar-date {
+  padding: 10px 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--straw);
+  opacity: 0.7;
+  border-bottom: 1px solid rgba(200,169,110,0.1);
+}
+
+.nav-section { padding: 14px 0 4px; }
+.nav-label {
+  padding: 0 20px 6px;
+  font-size: 9px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(200,169,110,0.45);
+  font-family: 'DM Mono', monospace;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  cursor: pointer;
+  color: rgba(247,242,232,0.65);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all .15s;
+  border-left: 2px solid transparent;
+}
+.nav-item:hover { color: var(--cream); background: rgba(200,169,110,0.08); }
+.nav-item.active {
+  color: var(--straw);
+  background: rgba(200,169,110,0.12);
+  border-left-color: var(--straw);
+}
+.nav-icon { font-size: 15px; width: 20px; text-align: center; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(200,169,110,0.12);
+  font-size: 11px;
+  color: rgba(200,169,110,0.4);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── MAIN ── */
+.main { margin-left: 228px; flex: 1; display: flex; flex-direction: column; }
+
+.topbar {
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.topbar-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--earth); }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+.btn {
+  padding: 7px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-mid);
+  font-size: 12px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn:hover { background: var(--parchment); }
+.btn-primary {
+  background: var(--grass);
+  color: #fff;
+  border-color: var(--grass);
+}
+.btn-primary:hover { background: var(--grass-light); border-color: var(--grass-light); }
+.btn-danger { background: var(--red); color: #fff; border-color: var(--red); }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+
+.content { padding: 24px 28px; flex: 1; }
+
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: none; } }
+
+/* ── GRID ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.kpi-card {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.kpi-label { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+.kpi-val { font-size: 26px; font-weight: 600; color: var(--earth); line-height: 1; margin-bottom: 4px; }
+.kpi-sub { font-size: 11px; color: var(--text-muted); }
+
+/* ── CAMPS ── */
+.camps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.camp-card {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.camp-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); border-color: var(--straw); }
+.camp-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--grass);
+}
+.camp-card.pen-quar::before { background: var(--amber); }
+.camp-card.pen-hosp::before { background: var(--red); }
+.camp-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.camp-name { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--earth); }
+.camp-badge {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: var(--grass-pale);
+  color: var(--grass);
+  font-weight: 500;
+}
+.camp-badge.quar { background: var(--amber-pale); color: var(--amber); }
+.camp-badge.hosp { background: var(--red-pale); color: var(--red); }
+.camp-stat { display: flex; justify-content: space-between; font-size: 12px; margin-top: 6px; color: var(--text-mid); }
+.camp-stat span:last-child { font-weight: 600; color: var(--text); }
+.camp-health-bar { height: 4px; background: var(--parchment); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+.camp-health-fill { height: 100%; background: var(--grass-light); border-radius: 2px; }
+
+/* ── TABLE ── */
+.card {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.card-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.card-title { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--earth); }
+.card-body { padding: 0; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  background: rgba(200,169,110,0.07);
+  border-bottom: 1px solid var(--border);
+}
+tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: rgba(200,169,110,0.05); }
+tbody td { padding: 9px 16px; color: var(--text-mid); }
+tbody td:first-child { color: var(--text); font-weight: 500; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+}
+.badge-green { background: var(--grass-pale); color: var(--grass); }
+.badge-amber { background: var(--amber-pale); color: var(--amber); }
+.badge-red { background: var(--red-pale); color: var(--red); }
+.badge-blue { background: #D8E8F8; color: var(--sky); }
+.badge-teal { background: var(--teal-pale); color: var(--teal); }
+
+/* ── FORM ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(44,36,22,0.55);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--cream);
+  border-radius: var(--radius-lg);
+  width: 520px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+.modal-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--earth); }
+.modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); line-height: 1; }
+.modal-body { padding: 20px 22px; }
+.modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-size: 11px; font-weight: 600; color: var(--text-mid); margin-bottom: 5px; letter-spacing: .04em; text-transform: uppercase; font-family: 'DM Mono', monospace; }
+.form-row input, .form-row select, .form-row textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--parchment);
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  transition: border-color .15s;
+  outline: none;
+}
+.form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+  border-color: var(--grass);
+  background: var(--cream);
+}
+.form-row textarea { resize: vertical; min-height: 70px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── FEEDGROW ── */
+.feedgrow-unit {
+  background: linear-gradient(135deg, #1A3A1A 0%, #2A5A2A 100%);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.feedgrow-unit::after {
+  content: '🌱';
+  position: absolute;
+  right: 16px;
+  top: 12px;
+  font-size: 28px;
+  opacity: 0.3;
+}
+.feedgrow-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 12px; margin-bottom: 16px; }
+.fg-label { font-size: 10px; opacity: 0.6; text-transform: uppercase; letter-spacing: .08em; font-family: 'DM Mono', monospace; margin-bottom: 4px; }
+.fg-val { font-size: 20px; font-weight: 600; margin-bottom: 2px; }
+.fg-sub { font-size: 11px; opacity: 0.6; }
+
+/* ── HEALTH ALERTS ── */
+.alert {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border-left: 3px solid;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.alert-red { background: var(--red-pale); border-color: var(--red); }
+.alert-amber { background: var(--amber-pale); border-color: var(--amber); }
+.alert-green { background: var(--grass-pale); border-color: var(--grass); }
+.alert-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+.alert-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+
+/* ── FINANCE ── */
+.finance-highlight {
+  background: var(--earth);
+  color: var(--straw);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.fh-label { font-size: 11px; opacity: 0.6; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing:.06em; margin-bottom: 6px; }
+.fh-val { font-family: 'DM Serif Display', serif; font-size: 32px; line-height: 1; }
+.fh-sub { font-size: 12px; opacity: 0.55; margin-top: 4px; }
+
+/* ── DAILY LOG ── */
+.log-timeline { padding: 4px 0; }
+.log-item {
+  display: flex;
+  gap: 14px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.log-item:last-child { border-bottom: none; }
+.log-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  width: 55px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.log-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.log-content { flex: 1; }
+.log-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.log-detail { font-size: 11px; color: var(--text-muted); }
+.log-camp { font-family: 'DM Mono', monospace; font-size: 10px; background: rgba(92,74,42,0.08); padding: 1px 6px; border-radius: 10px; color: var(--text-muted); }
+
+/* ── TABS (inline) ── */
+.inner-tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+.inner-tab {
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all .15s;
+}
+.inner-tab:hover { color: var(--text); }
+.inner-tab.active { color: var(--grass); border-bottom-color: var(--grass); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.section-title { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--earth); margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>Howick<br>Feedlot</h1>
+    <span>Cattle Management System</span>
+  </div>
+  <div class="sidebar-date" id="sidebar-date">Loading...</div>
+
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" onclick="showPanel('dashboard')">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPanel('camps')">
+        <span class="nav-icon">🐄</span> Camps & Herd
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Daily Operations</div>
+      <div class="nav-item" onclick="showPanel('daily')">
+        <span class="nav-icon">📋</span> Daily Log
+      </div>
+      <div class="nav-item" onclick="showPanel('feeding')">
+        <span class="nav-icon">🌱</span> FeedGrow & Feeding
+      </div>
+      <div class="nav-item" onclick="showPanel('weighing')">
+        <span class="nav-icon">⚖️</span> Weighing & ADG
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Health & Welfare</div>
+      <div class="nav-item" onclick="showPanel('health')">
+        <span class="nav-icon">🩺</span> Health Records
+      </div>
+      <div class="nav-item" onclick="showPanel('treatments')">
+        <span class="nav-icon">💉</span> Treatments & Meds
+      </div>
+      <div class="nav-item" onclick="showPanel('mortalities')">
+        <span class="nav-icon">📌</span> Mortalities
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Management</div>
+      <div class="nav-item" onclick="showPanel('movements')">
+        <span class="nav-icon">🔀</span> Movements
+      </div>
+      <div class="nav-item" onclick="showPanel('water')">
+        <span class="nav-icon">💧</span> Water & Shade
+      </div>
+      <div class="nav-item" onclick="showPanel('finance')">
+        <span class="nav-icon">💰</span> Finance & Costs
+      </div>
+      <div class="nav-item" onclick="showPanel('reports')">
+        <span class="nav-icon">📄</span> Reports
+      </div>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">v1.0 · Howick, KZN<br>8 Camps · 960 Head</div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-title" id="panel-title">Dashboard</div>
+  <div class="topbar-actions">
+    <button class="btn btn-sm" onclick="showModal('modal-log')">+ Log Activity</button>
+    <button class="btn btn-sm btn-primary" onclick="showModal('modal-alert')">⚠ Alert</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══ DASHBOARD ═══ -->
+<div class="panel active" id="panel-dashboard">
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Head</div>
+      <div class="kpi-val" id="kpi-total">960</div>
+      <div class="kpi-sub">8 camps active</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Avg ADG</div>
+      <div class="kpi-val" style="color:var(--grass)" id="kpi-adg">1.68</div>
+      <div class="kpi-sub">kg/day · target 1.65</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">In Hospital</div>
+      <div class="kpi-val" style="color:var(--red)" id="kpi-hosp">3</div>
+      <div class="kpi-sub">0.3% of herd</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">In Quarantine</div>
+      <div class="kpi-val" style="color:var(--amber)" id="kpi-quar">24</div>
+      <div class="kpi-sub">Day 14 of 21</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Days on Feed</div>
+      <div class="kpi-val" id="kpi-dof">62</div>
+      <div class="kpi-sub">Target 150 days</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Batch Profit Est.</div>
+      <div class="kpi-val" style="color:var(--grass);font-size:18px">R2.96M</div>
+      <div class="kpi-sub">Current batch</div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="section-title">Active Alerts</div>
+  <div id="alert-list">
+    <div class="alert alert-red">
+      <div>
+        <div class="alert-text">🐄 Camp B2 — Bovine respiratory disease suspected (4 animals showing nasal discharge)</div>
+        <div class="alert-meta">Today · Reported by J. Dlamini</div>
+      </div>
+      <button class="btn btn-sm" onclick="showPanel('health')">View</button>
+    </div>
+    <div class="alert alert-amber">
+      <div>
+        <div class="alert-text">⚖️ Weighing due — Camps A1, A2 overdue for monthly weigh-in (last weighed 34 days ago)</div>
+        <div class="alert-meta">Yesterday</div>
+      </div>
+      <button class="btn btn-sm" onclick="showPanel('weighing')">Schedule</button>
+    </div>
+    <div class="alert alert-amber">
+      <div>
+        <div class="alert-text">🌱 FeedGrow Unit 7 — Tray germination rate below 85%. Check seed moisture & temp.</div>
+        <div class="alert-meta">2 days ago</div>
+      </div>
+      <button class="btn btn-sm" onclick="showPanel('feeding')">Inspect</button>
+    </div>
+    <div class="alert alert-green">
+      <div>
+        <div class="alert-text">✅ Quarantine batch cleared — 24 animals ready for release to production pens</div>
+        <div class="alert-meta">Tomorrow scheduled</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-top:16px">
+    <!-- Today's tasks -->
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Today's Tasks</span>
+          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace" id="today-date"></span>
+        </div>
+        <div class="card-body" id="task-list">
+          <div class="log-item">
+            <div class="log-time">06:00</div>
+            <div class="log-dot" style="background:var(--grass)"></div>
+            <div class="log-content">
+              <div class="log-title">Morning visual check — all 8 camps</div>
+              <div class="log-detail">Check behaviour, posture, nasal/eye discharge</div>
+            </div>
+          </div>
+          <div class="log-item">
+            <div class="log-time">06:30</div>
+            <div class="log-dot" style="background:var(--grass)"></div>
+            <div class="log-content">
+              <div class="log-title">FeedGrow tray harvest & reload</div>
+              <div class="log-detail">Harvest day-7 trays · load fresh barley seed</div>
+            </div>
+          </div>
+          <div class="log-item">
+            <div class="log-time">07:00</div>
+            <div class="log-dot" style="background:var(--amber)"></div>
+            <div class="log-content">
+              <div class="log-title">TMR feed run — all production camps</div>
+              <div class="log-detail">Sprouts + production ration via wagon</div>
+            </div>
+          </div>
+          <div class="log-item">
+            <div class="log-time">10:00</div>
+            <div class="log-dot" style="background:var(--sky)"></div>
+            <div class="log-content">
+              <div class="log-title">Trough inspection & cleaning</div>
+              <div class="log-detail">Check float valves, scrub algae</div>
+            </div>
+          </div>
+          <div class="log-item">
+            <div class="log-time">14:00</div>
+            <div class="log-dot" style="background:var(--amber)"></div>
+            <div class="log-content">
+              <div class="log-title">Afternoon feed run</div>
+              <div class="log-detail">Second TMR delivery</div>
+            </div>
+          </div>
+          <div class="log-item">
+            <div class="log-time">16:30</div>
+            <div class="log-dot" style="background:var(--rust)"></div>
+            <div class="log-content">
+              <div class="log-title">Hospital pen check & treatments</div>
+              <div class="log-detail">Administer scheduled meds · record temps</div>
+            </div>
+          </div>
+          <div class="log-item">
+            <div class="log-time">17:00</div>
+            <div class="log-dot" style="background:var(--grass)"></div>
+            <div class="log-content">
+              <div class="log-title">Evening visual check & pen scraping</div>
+              <div class="log-detail">All camps · effluent removal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Camp status summary -->
+    <div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Camp Status</span></div>
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr><th>Camp</th><th>Head</th><th>DOF</th><th>ADG</th><th>Status</th></tr>
+            </thead>
+            <tbody id="camp-summary-table">
+              <tr><td>A1</td><td>120</td><td>62</td><td>1.72</td><td><span class="badge badge-green">Good</span></td></tr>
+              <tr><td>A2</td><td>120</td><td>62</td><td>1.65</td><td><span class="badge badge-green">Good</span></td></tr>
+              <tr><td>A3</td><td>120</td><td>62</td><td>1.58</td><td><span class="badge badge-amber">Monitor</span></td></tr>
+              <tr><td>A4</td><td>120</td><td>62</td><td>1.70</td><td><span class="badge badge-green">Good</span></td></tr>
+              <tr><td>B1</td><td>120</td><td>62</td><td>1.69</td><td><span class="badge badge-green">Good</span></td></tr>
+              <tr><td>B2</td><td>116</td><td>62</td><td>1.52</td><td><span class="badge badge-red">Alert</span></td></tr>
+              <tr><td>B3</td><td>120</td><td>62</td><td>1.71</td><td><span class="badge badge-green">Good</span></td></tr>
+              <tr><td>B4</td><td>120</td><td>62</td><td>1.68</td><td><span class="badge badge-green">Good</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CAMPS ═══ -->
+<div class="panel" id="panel-camps">
+  <div class="camps-grid" id="camps-grid">
+    <!-- Generated by JS -->
+  </div>
+</div>
+
+<!-- ═══ DAILY LOG ═══ -->
+<div class="panel" id="panel-daily">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div class="section-title" style="margin:0">Daily Activity Log</div>
+    <button class="btn btn-primary" onclick="showModal('modal-log')">+ Add Log Entry</button>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Today's Log</span>
+      <input type="date" id="log-date-filter" class="btn btn-sm" style="border:1px solid var(--border)">
+    </div>
+    <div class="card-body log-timeline" id="daily-log-list">
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FEEDGROW ═══ -->
+<div class="panel" id="panel-feeding">
+  <div class="feedgrow-grid">
+    <div class="feedgrow-unit">
+      <div class="fg-label">FeedGrow Units Active</div>
+      <div class="fg-val">13 / 13</div>
+      <div class="fg-sub">FG750 model · 750 kg/day each</div>
+    </div>
+    <div class="feedgrow-unit">
+      <div class="fg-label">Total Sprouts Today</div>
+      <div class="fg-val">9,750 kg</div>
+      <div class="fg-sub">10.2 kg/head · target 10 kg</div>
+    </div>
+    <div class="feedgrow-unit">
+      <div class="fg-label">Barley Seed Used Today</div>
+      <div class="fg-val">1,462 kg</div>
+      <div class="fg-sub">@ R4.50/kg = R6,579</div>
+    </div>
+    <div class="feedgrow-unit">
+      <div class="fg-label">Production Ration Today</div>
+      <div class="fg-val">5,280 kg</div>
+      <div class="fg-sub">5.5 kg/head · @ R3.80 = R20,064</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">FeedGrow Unit Status</span>
+          <button class="btn btn-sm btn-primary" onclick="showModal('modal-feedgrow')">Log Daily Reading</button>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>Unit</th><th>Sprout Yield</th><th>Germ %</th><th>Temp °C</th><th>Status</th></tr></thead>
+            <tbody id="fg-unit-table">
+              <tr><td>FG-01</td><td>748 kg</td><td>96%</td><td>22°C</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td>FG-02</td><td>750 kg</td><td>97%</td><td>21°C</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td>FG-03</td><td>745 kg</td><td>95%</td><td>22°C</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td>FG-04</td><td>751 kg</td><td>98%</td><td>21°C</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td>FG-05</td><td>749 kg</td><td>96%</td><td>22°C</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td>FG-06</td><td>748 kg</td><td>95%</td><td>23°C</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td>FG-07</td><td>631 kg</td><td>82%</td><td>26°C</td><td><span class="badge badge-red">Check</span></td></tr>
+              <tr><td>FG-08</td><td>750 kg</td><td>97%</td><td>21°C</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td>FG-09</td><td>748 kg</td><td>96%</td><td>22°C</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td>FG-10</td><td>750 kg</td><td>97%</td><td>21°C</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td>FG-11</td><td>749 kg</td><td>95%</td><td>22°C</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td>FG-12</td><td>748 kg</td><td>96%</td><td>22°C</td><td><span class="badge badge-green">OK</span></td></tr>
+              <tr><td>FG-13</td><td>743 kg</td><td>94%</td><td>23°C</td><td><span class="badge badge-green">OK</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Feed Delivery Log</span>
+          <button class="btn btn-sm btn-primary" onclick="showModal('modal-feed')">+ Log Feed Run</button>
+        </div>
+        <div class="card-body" id="feed-log-table">
+          <table>
+            <thead><tr><th>Camp</th><th>Sprouts</th><th>Prod Ration</th><th>Roughage</th><th>Time</th></tr></thead>
+            <tbody id="feed-log-body">
+              <tr><td>A1</td><td>1,224 kg</td><td>660 kg</td><td>ad lib</td><td>07:10</td></tr>
+              <tr><td>A2</td><td>1,224 kg</td><td>660 kg</td><td>ad lib</td><td>07:22</td></tr>
+              <tr><td>A3</td><td>1,224 kg</td><td>660 kg</td><td>ad lib</td><td>07:35</td></tr>
+              <tr><td>A4</td><td>1,224 kg</td><td>660 kg</td><td>ad lib</td><td>07:48</td></tr>
+              <tr><td>B1</td><td>1,224 kg</td><td>660 kg</td><td>ad lib</td><td>08:02</td></tr>
+              <tr><td>B2</td><td>1,189 kg</td><td>638 kg</td><td>ad lib</td><td>08:15</td></tr>
+              <tr><td>B3</td><td>1,224 kg</td><td>660 kg</td><td>ad lib</td><td>08:28</td></tr>
+              <tr><td>B4</td><td>1,224 kg</td><td>660 kg</td><td>ad lib</td><td>08:41</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="card-header"><span class="card-title">Feed Cost Tracker (This Month)</span></div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>Item</th><th>Quantity</th><th>Cost</th></tr></thead>
+            <tbody>
+              <tr><td>Barley seed</td><td>43,860 kg</td><td>R197,370</td></tr>
+              <tr><td>Production ration</td><td>158,400 kg</td><td>R601,920</td></tr>
+              <tr><td>Roughage / hay</td><td>est. 28,800 kg</td><td>R43,200</td></tr>
+              <tr><td>Electricity (FG units)</td><td>—</td><td>R8,710</td></tr>
+              <tr><td style="font-weight:600">Total feed cost (30d)</td><td></td><td style="font-weight:600;color:var(--earth)">R851,200</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WEIGHING ═══ -->
+<div class="panel" id="panel-weighing">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div class="section-title" style="margin:0">Weighing & Growth Records</div>
+    <button class="btn btn-primary" onclick="showModal('modal-weigh')">+ Record Weights</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Avg Entry Weight</div><div class="kpi-val">232 kg</div><div class="kpi-sub">Current batch</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Current Weight</div><div class="kpi-val">336 kg</div><div class="kpi-sub">Day 62</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Daily Gain</div><div class="kpi-val" style="color:var(--grass)">1.68 kg</div><div class="kpi-sub">vs target 1.65</div></div>
+    <div class="kpi-card"><div class="kpi-label">Projected Exit Wt</div><div class="kpi-val">484 kg</div><div class="kpi-sub">Day 150</div></div>
+    <div class="kpi-card"><div class="kpi-label">Proj. Carcass Wt</div><div class="kpi-val">266 kg</div><div class="kpi-sub">@ 55% dress</div></div>
+    <div class="kpi-card"><div class="kpi-label">Days to Finish</div><div class="kpi-val">88</div><div class="kpi-sub">Remaining</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Weight History by Camp</span></div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>Camp</th><th>Entry Wt</th><th>Day 30</th><th>Day 60</th><th>Current ADG</th><th>Proj. Exit</th><th>Target</th></tr></thead>
+        <tbody>
+          <tr><td>A1</td><td>234 kg</td><td>284 kg</td><td>336 kg</td><td>1.72</td><td>486 kg</td><td><span class="badge badge-green">On track</span></td></tr>
+          <tr><td>A2</td><td>231 kg</td><td>279 kg</td><td>330 kg</td><td>1.65</td><td>479 kg</td><td><span class="badge badge-green">On track</span></td></tr>
+          <tr><td>A3</td><td>229 kg</td><td>275 kg</td><td>323 kg</td><td>1.58</td><td>466 kg</td><td><span class="badge badge-amber">Below</span></td></tr>
+          <tr><td>A4</td><td>233 kg</td><td>282 kg</td><td>334 kg</td><td>1.70</td><td>483 kg</td><td><span class="badge badge-green">On track</span></td></tr>
+          <tr><td>B1</td><td>230 kg</td><td>280 kg</td><td>332 kg</td><td>1.69</td><td>481 kg</td><td><span class="badge badge-green">On track</span></td></tr>
+          <tr><td>B2</td><td>235 kg</td><td>280 kg</td><td>328 kg</td><td>1.52</td><td>462 kg</td><td><span class="badge badge-red">Alert</span></td></tr>
+          <tr><td>B3</td><td>232 kg</td><td>283 kg</td><td>335 kg</td><td>1.71</td><td>485 kg</td><td><span class="badge badge-green">On track</span></td></tr>
+          <tr><td>B4</td><td>233 kg</td><td>283 kg</td><td>334 kg</td><td>1.68</td><td>484 kg</td><td><span class="badge badge-green">On track</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HEALTH ═══ -->
+<div class="panel" id="panel-health">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div class="section-title" style="margin:0">Health Records</div>
+    <button class="btn btn-primary" onclick="showModal('modal-health')">+ Record Health Event</button>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi-card"><div class="kpi-label">In Hospital</div><div class="kpi-val" style="color:var(--red)">3</div><div class="kpi-sub">0.3% morbidity</div></div>
+    <div class="kpi-card"><div class="kpi-label">Under Treatment</div><div class="kpi-val" style="color:var(--amber)">7</div><div class="kpi-sub">In-pen treatments</div></div>
+    <div class="kpi-card"><div class="kpi-label">Mortalities (batch)</div><div class="kpi-val">1</div><div class="kpi-sub">0.10% rate</div></div>
+    <div class="kpi-card"><div class="kpi-label">Recovered (30d)</div><div class="kpi-val" style="color:var(--grass)">9</div><div class="kpi-sub">100% recovery rate</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Active Health Cases</span></div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>Tag #</th><th>Camp</th><th>Condition</th><th>Admitted</th><th>Treatment</th><th>Location</th><th>Status</th></tr></thead>
+        <tbody id="health-records">
+          <tr><td>BH-2241</td><td>B2</td><td>BRD — nasal discharge, fever 40.2°C</td><td>Today</td><td>Oxytetracycline 20mg/kg</td><td>Hospital pen</td><td><span class="badge badge-red">Critical</span></td></tr>
+          <tr><td>BH-2198</td><td>B2</td><td>BRD mild — early signs</td><td>Today</td><td>Penicillin in-pen</td><td>Camp B2</td><td><span class="badge badge-amber">Monitor</span></td></tr>
+          <tr><td>BH-1842</td><td>A3</td><td>Lameness — right rear, grade 2</td><td>3 days ago</td><td>Anti-inflammatory, hoof trim</td><td>Hospital pen</td><td><span class="badge badge-amber">Improving</span></td></tr>
+          <tr><td>BH-1655</td><td>A3</td><td>Pink eye — left eye</td><td>5 days ago</td><td>Oxytet eye ointment</td><td>Camp A3</td><td><span class="badge badge-green">Recovering</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="card-header"><span class="card-title">Vaccination & Preventive Programme</span></div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>Procedure</th><th>Product</th><th>Timing</th><th>Last Done</th><th>Next Due</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Clostridial vaccine (7-in-1)</td><td>Multivax-P</td><td>Arrival + booster 4 weeks</td><td>Arrival</td><td>Day 28</td><td><span class="badge badge-green">Done</span></td></tr>
+          <tr><td>BRD vaccine</td><td>Bovi-Shield</td><td>Arrival</td><td>Arrival</td><td>—</td><td><span class="badge badge-green">Done</span></td></tr>
+          <tr><td>Deworming (pour-on)</td><td>Ivomec</td><td>Arrival + 90 days</td><td>Day 0</td><td>Day 90</td><td><span class="badge badge-amber">Due Day 90</span></td></tr>
+          <tr><td>Dipping (tick control)</td><td>Triatix</td><td>Every 14 days</td><td>Day 55</td><td>Day 69</td><td><span class="badge badge-amber">Due in 7 days</span></td></tr>
+          <tr><td>Vitamin ADE injection</td><td>Duphafral</td><td>Arrival + 60 days</td><td>Day 0</td><td>Day 60</td><td><span class="badge badge-red">Due Now</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TREATMENTS ═══ -->
+<div class="panel" id="panel-treatments">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div class="section-title" style="margin:0">Treatment & Medication Records</div>
+    <button class="btn btn-primary" onclick="showModal('modal-treat')">+ Record Treatment</button>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Treatment Log</span></div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>Date</th><th>Tag #</th><th>Camp</th><th>Drug / Product</th><th>Dose</th><th>Route</th><th>Withdrawal</th><th>By</th></tr></thead>
+        <tbody id="treat-log">
+          <tr><td id="today-td1"></td><td>BH-2241</td><td>B2 → Hosp</td><td>Oxytetracycline HCl</td><td>20 mg/kg · 4,840 mg</td><td>IV</td><td>21 days</td><td>Dr. Naidoo</td></tr>
+          <tr><td id="today-td2"></td><td>BH-2198</td><td>B2</td><td>Pen-Strep</td><td>1 ml/25kg · 9.6 ml</td><td>IM</td><td>28 days</td><td>J. Dlamini</td></tr>
+          <tr><td id="today-td3"></td><td>BH-1842</td><td>Hosp</td><td>Flunixin meglumine (Finadyne)</td><td>2.2 mg/kg · 530 mg</td><td>IV</td><td>5 days</td><td>Dr. Naidoo</td></tr>
+          <tr><td id="today-td4"></td><td>BH-1655</td><td>A3</td><td>Terramycin Eye Oint.</td><td>2× daily both eyes</td><td>Topical</td><td>0 days</td><td>J. Dlamini</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="card-header"><span class="card-title">Medicine Stock</span></div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>Product</th><th>Category</th><th>Stock</th><th>Min Level</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Oxytetracycline 200mg/ml</td><td>Antibiotic</td><td>4.2 L</td><td>2 L</td><td><span class="badge badge-green">OK</span></td></tr>
+          <tr><td>Pen-Strep</td><td>Antibiotic</td><td>800 ml</td><td>500 ml</td><td><span class="badge badge-green">OK</span></td></tr>
+          <tr><td>Finadyne (Flunixin)</td><td>NSAID</td><td>280 ml</td><td>250 ml</td><td><span class="badge badge-amber">Reorder soon</span></td></tr>
+          <tr><td>Ivomec Pour-on</td><td>Antiparasitic</td><td>1.8 L</td><td>1 L</td><td><span class="badge badge-green">OK</span></td></tr>
+          <tr><td>Triatix (Amitraz dip)</td><td>Ectoparasiticide</td><td>6 L conc.</td><td>4 L</td><td><span class="badge badge-green">OK</span></td></tr>
+          <tr><td>Multivax-P</td><td>Vaccine</td><td>80 doses</td><td>50 doses</td><td><span class="badge badge-green">OK</span></td></tr>
+          <tr><td>Bovi-Shield</td><td>Vaccine (BRD)</td><td>45 doses</td><td>50 doses</td><td><span class="badge badge-red">Reorder now</span></td></tr>
+          <tr><td>Duphafral ADE</td><td>Vitamin supplement</td><td>300 ml</td><td>200 ml</td><td><span class="badge badge-green">OK</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MORTALITIES ═══ -->
+<div class="panel" id="panel-mortalities">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div class="section-title" style="margin:0">Mortality Records</div>
+    <button class="btn btn-primary" onclick="showModal('modal-mort')">+ Record Mortality</button>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi-card"><div class="kpi-label">This Batch</div><div class="kpi-val">1</div><div class="kpi-sub">0.10% rate · target &lt;1.2%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Financial Loss</div><div class="kpi-val" style="color:var(--red)">R9,200</div><div class="kpi-sub">Purchase value of lost animal</div></div>
+    <div class="kpi-card"><div class="kpi-label">Insurance Claims</div><div class="kpi-val" style="color:var(--grass)">R7,800</div><div class="kpi-sub">80% recovery · 1 claim</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Mortality Register</span></div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>Date</th><th>Tag #</th><th>Camp</th><th>Weight</th><th>Cause</th><th>Disposition</th><th>Value Lost</th></tr></thead>
+        <tbody>
+          <tr><td>Day 41</td><td>BH-1344</td><td>B2</td><td>281 kg (est.)</td><td>Bloat — acute</td><td>Knacker — rendered</td><td>R9,200</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MOVEMENTS ═══ -->
+<div class="panel" id="panel-movements">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div class="section-title" style="margin:0">Animal Movements</div>
+    <button class="btn btn-primary" onclick="showModal('modal-move')">+ Record Movement</button>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Movement Log</span></div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>Date</th><th>Tag #</th><th>From</th><th>To</th><th>Reason</th><th>Weight</th><th>Recorded By</th></tr></thead>
+        <tbody id="movement-log">
+          <tr><td>Today</td><td>BH-2241</td><td>Camp B2</td><td>Hospital pen</td><td>BRD — high fever</td><td>—</td><td>J. Dlamini</td></tr>
+          <tr><td>Day 60</td><td>BH-1842</td><td>Camp A3</td><td>Hospital pen</td><td>Lameness grade 2</td><td>324 kg</td><td>J. Dlamini</td></tr>
+          <tr><td>Day 0</td><td>Batch 1 (960 hd)</td><td>Arrival — trucks</td><td>Quarantine pens</td><td>New batch arrival</td><td>Avg 232 kg</td><td>P. Sithole</td></tr>
+          <tr><td>Day 21</td><td>Quarantine batch</td><td>Quarantine pens</td><td>Production camps</td><td>Quarantine cleared</td><td>Avg 265 kg</td><td>P. Sithole</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WATER & SHADE ═══ -->
+<div class="panel" id="panel-water">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div class="section-title" style="margin:0">Water & Shade Inspection</div>
+    <button class="btn btn-primary" onclick="showModal('modal-water')">+ Log Inspection</button>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi-card"><div class="kpi-label">Reservoir Level</div><div class="kpi-val" style="color:var(--sky)">214 kL</div><div class="kpi-sub">86% of 250 kL</div></div>
+    <div class="kpi-card"><div class="kpi-label">Daily Usage</div><div class="kpi-val">61 kL</div><div class="kpi-sub">Drinking + cleaning</div></div>
+    <div class="kpi-card"><div class="kpi-label">Borehole Status</div><div class="kpi-val" style="color:var(--grass)">Online</div><div class="kpi-sub">Backup — 18 kL/hr</div></div>
+    <div class="kpi-card"><div class="kpi-label">Shade Cloth OK</div><div class="kpi-val">7/8</div><div class="kpi-sub">Camp B4 requires repair</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Daily Water & Shade Checklist</span></div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>Camp</th><th>Troughs Clean</th><th>Float Valve OK</th><th>Water flowing</th><th>Shade intact</th><th>Notes</th></tr></thead>
+        <tbody id="water-table">
+          <tr><td>A1</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>—</td></tr>
+          <tr><td>A2</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>—</td></tr>
+          <tr><td>A3</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>—</td></tr>
+          <tr><td>A4</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>—</td></tr>
+          <tr><td>B1</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>—</td></tr>
+          <tr><td>B2</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>—</td></tr>
+          <tr><td>B3</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>—</td></tr>
+          <tr><td>B4</td><td>✅</td><td>✅</td><td>✅</td><td>⚠️</td><td>Shade cloth torn — east side. Repair scheduled.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FINANCE ═══ -->
+<div class="panel" id="panel-finance">
+  <div class="finance-highlight">
+    <div>
+      <div class="fh-label">Projected Batch Profit</div>
+      <div class="fh-val">R 2,960,640</div>
+      <div class="fh-sub">960 head · 88 days remaining</div>
+    </div>
+    <div style="text-align:right">
+      <div class="fh-label">Per head</div>
+      <div class="fh-val" style="font-size:22px">R 3,084</div>
+      <div class="fh-sub">18.5% net margin</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Cost Tracker — This Batch</span>
+          <button class="btn btn-sm btn-primary" onclick="showModal('modal-cost')">+ Add Cost</button>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>Category</th><th>Budget</th><th>Spent to Date</th><th>Remaining</th></tr></thead>
+            <tbody id="cost-table">
+              <tr><td>Weaner purchase</td><td>R8,832,000</td><td>R8,832,000</td><td>—</td></tr>
+              <tr><td>FeedGrow barley seed</td><td>R1,426,560</td><td>R373,148</td><td>R1,053,412</td></tr>
+              <tr><td>Production ration</td><td>R3,009,600</td><td>R788,640</td><td>R2,220,960</td></tr>
+              <tr><td>Roughage / hay</td><td>R432,000</td><td>R113,040</td><td>R318,960</td></tr>
+              <tr><td>Labour</td><td>R302,400</td><td>R124,992</td><td>R177,408</td></tr>
+              <tr><td>Vet & medications</td><td>R105,600</td><td>R27,646</td><td>R77,954</td></tr>
+              <tr><td>Transport</td><td>R192,000</td><td>R96,000</td><td>R96,000</td></tr>
+              <tr><td>Electricity & water</td><td>R86,400</td><td>R22,616</td><td>R63,784</td></tr>
+              <tr><td>FeedGrow amort.</td><td>R29,167</td><td>R12,055</td><td>R17,112</td></tr>
+              <tr style="background:rgba(200,169,110,0.08)"><td style="font-weight:600">Total</td><td style="font-weight:600">R14,415,727</td><td style="font-weight:600">R10,392,137</td><td style="font-weight:600;color:var(--earth)">R4,023,590</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Revenue Projection</span></div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>Item</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td>Projected exit weight</td><td>484 kg/head avg</td></tr>
+              <tr><td>Dressing %</td><td>55%</td></tr>
+              <tr><td>Projected carcass</td><td>266 kg/head</td></tr>
+              <tr><td>Carcass price (A2/3)</td><td>R63/kg</td></tr>
+              <tr><td>Revenue per head</td><td>R16,758</td></tr>
+              <tr><td>Total head (excl. mort.)</td><td>959</td></tr>
+              <tr><td><strong>Gross revenue</strong></td><td><strong>R16,079,922</strong></td></tr>
+              <tr><td>Total batch cost</td><td>R14,415,727</td></tr>
+              <tr><td style="color:var(--grass);font-weight:600">Net batch profit</td><td style="color:var(--grass);font-weight:600">R1,664,195</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="card-header"><span class="card-title">Market Prices (Live)</span></div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>Item</th><th>Price</th><th>Updated</th></tr></thead>
+            <tbody>
+              <tr><td>A2/3 carcass</td><td>R63.00/kg</td><td>This week</td></tr>
+              <tr><td>Weaner (KZN avg)</td><td>R40.41/kg</td><td>This week</td></tr>
+              <tr><td>Maize (white, local)</td><td>R3,680/t</td><td>This week</td></tr>
+              <tr><td>Barley seed (feed)</td><td>R4,500/t</td><td>This month</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ REPORTS ═══ -->
+<div class="panel" id="panel-reports">
+  <div class="section-title">Reports & Exports</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+    <div class="camp-card" onclick="printReport('daily')">
+      <div class="camp-card-header"><div class="camp-name">Daily Report</div><span style="font-size:20px">📋</span></div>
+      <div class="camp-stat"><span>All camps · today's activities</span></div>
+      <div class="camp-stat"><span>Format</span><span>Print / PDF</span></div>
+    </div>
+    <div class="camp-card" onclick="printReport('health')">
+      <div class="camp-card-header"><div class="camp-name">Health Summary</div><span style="font-size:20px">🩺</span></div>
+      <div class="camp-stat"><span>Treatments, meds, mortalities</span></div>
+      <div class="camp-stat"><span>Format</span><span>Print / PDF</span></div>
+    </div>
+    <div class="camp-card" onclick="printReport('growth')">
+      <div class="camp-card-header"><div class="camp-name">Growth Report</div><span style="font-size:20px">⚖️</span></div>
+      <div class="camp-stat"><span>ADG, weights, projections</span></div>
+      <div class="camp-stat"><span>Format</span><span>Print / PDF</span></div>
+    </div>
+    <div class="camp-card" onclick="printReport('finance')">
+      <div class="camp-card-header"><div class="camp-name">Finance Statement</div><span style="font-size:20px">💰</span></div>
+      <div class="camp-stat"><span>Costs, revenue, profit</span></div>
+      <div class="camp-stat"><span>Format</span><span>Print / PDF</span></div>
+    </div>
+    <div class="camp-card" onclick="printReport('feedgrow')">
+      <div class="camp-card-header"><div class="camp-name">FeedGrow Log</div><span style="font-size:20px">🌱</span></div>
+      <div class="camp-stat"><span>Unit yields, seed usage, costs</span></div>
+      <div class="camp-stat"><span>Format</span><span>Print / PDF</span></div>
+    </div>
+    <div class="camp-card" onclick="printReport('compliance')">
+      <div class="camp-card-header"><div class="camp-name">NSPCA Compliance</div><span style="font-size:20px">📜</span></div>
+      <div class="camp-stat"><span>Welfare records for audit</span></div>
+      <div class="camp-stat"><span>Format</span><span>Print / PDF</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</main>
+</div><!-- /app -->
+
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- Log Activity -->
+<div class="modal-overlay" id="modal-log">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Log Daily Activity</span>
+      <button class="modal-close" onclick="closeModal('modal-log')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label>Date</label><input type="date" id="log-date"></div>
+        <div class="form-row"><label>Time</label><input type="time" id="log-time"></div>
+      </div>
+      <div class="form-row"><label>Camp</label>
+        <select id="log-camp">
+          <option>All camps</option>
+          <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+          <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+          <option>Hospital pen</option><option>Quarantine</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Activity Type</label>
+        <select id="log-type">
+          <option>Visual check</option>
+          <option>Feed run (TMR)</option>
+          <option>FeedGrow harvest / reload</option>
+          <option>Water trough check</option>
+          <option>Shade inspection</option>
+          <option>Pen scraping / cleaning</option>
+          <option>Treatment administered</option>
+          <option>Weighing</option>
+          <option>Animal movement</option>
+          <option>Maintenance</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Notes</label><textarea id="log-notes" placeholder="Observations, issues, actions taken..."></textarea></div>
+      <div class="form-row"><label>Staff Member</label><input type="text" id="log-staff" placeholder="Name"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-log')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLog()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Health Event -->
+<div class="modal-overlay" id="modal-health">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Record Health Event</span>
+      <button class="modal-close" onclick="closeModal('modal-health')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label>Tag / RFID #</label><input type="text" id="h-tag" placeholder="BH-XXXX"></div>
+        <div class="form-row"><label>Camp</label>
+          <select id="h-camp">
+            <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+            <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row"><label>Condition / Symptoms</label><input type="text" id="h-cond" placeholder="e.g. BRD — nasal discharge, fever"></div>
+      <div class="form-grid">
+        <div class="form-row"><label>Temperature (°C)</label><input type="number" id="h-temp" step="0.1" placeholder="38.5"></div>
+        <div class="form-row"><label>Severity</label>
+          <select id="h-severity">
+            <option>Mild — monitor in camp</option>
+            <option>Moderate — treat in camp</option>
+            <option>Severe — move to hospital</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row"><label>Initial Treatment</label><input type="text" id="h-treat" placeholder="Drug, dose, route"></div>
+      <div class="form-row"><label>Notes</label><textarea id="h-notes" placeholder="Observations..."></textarea></div>
+      <div class="form-row"><label>Reported By</label><input type="text" id="h-staff"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-health')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveHealth()">Save Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- Treatment -->
+<div class="modal-overlay" id="modal-treat">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Record Treatment</span>
+      <button class="modal-close" onclick="closeModal('modal-treat')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label>Tag # / Animal ID</label><input type="text" id="t-tag"></div>
+        <div class="form-row"><label>Camp</label>
+          <select id="t-camp">
+            <option>Hospital pen</option>
+            <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+            <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row"><label>Drug / Product</label><input type="text" id="t-drug"></div>
+      <div class="form-grid">
+        <div class="form-row"><label>Dose (mg/kg or ml)</label><input type="text" id="t-dose"></div>
+        <div class="form-row"><label>Route</label>
+          <select id="t-route">
+            <option>IV</option><option>IM</option><option>SC</option><option>Oral</option><option>Topical</option><option>Pour-on</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Withdrawal (days)</label><input type="number" id="t-wd"></div>
+        <div class="form-row"><label>Administered By</label><input type="text" id="t-by"></div>
+      </div>
+      <div class="form-row"><label>Notes</label><textarea id="t-notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-treat')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTreatment()">Save Treatment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Weigh -->
+<div class="modal-overlay" id="modal-weigh">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Record Weights</span>
+      <button class="modal-close" onclick="closeModal('modal-weigh')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label>Camp</label>
+          <select id="w-camp">
+            <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+            <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Date</label><input type="date" id="w-date"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>No. Animals Weighed</label><input type="number" id="w-n" value="120"></div>
+        <div class="form-row"><label>Average Weight (kg)</label><input type="number" id="w-avg" step="0.1"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Min Weight (kg)</label><input type="number" id="w-min"></div>
+        <div class="form-row"><label>Max Weight (kg)</label><input type="number" id="w-max"></div>
+      </div>
+      <div class="form-row"><label>Condition Score (1–5)</label>
+        <select id="w-bcs">
+          <option>1 — Emaciated</option><option>2 — Thin</option><option>3 — Moderate</option>
+          <option value="4" selected>4 — Good</option><option>5 — Fat</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Notes</label><textarea id="w-notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-weigh')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveWeight()">Save Weights</button>
+    </div>
+  </div>
+</div>
+
+<!-- FeedGrow Log -->
+<div class="modal-overlay" id="modal-feedgrow">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Log FeedGrow Daily Reading</span>
+      <button class="modal-close" onclick="closeModal('modal-feedgrow')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label>Unit #</label>
+          <select id="fg-unit">
+            <option>FG-01</option><option>FG-02</option><option>FG-03</option><option>FG-04</option>
+            <option>FG-05</option><option>FG-06</option><option>FG-07</option><option>FG-08</option>
+            <option>FG-09</option><option>FG-10</option><option>FG-11</option><option>FG-12</option><option>FG-13</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Date</label><input type="date" id="fg-date"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Sprout Yield (kg)</label><input type="number" id="fg-yield" placeholder="750"></div>
+        <div class="form-row"><label>Germination Rate (%)</label><input type="number" id="fg-germ" placeholder="95"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Temperature (°C)</label><input type="number" id="fg-temp" step="0.1" placeholder="22"></div>
+        <div class="form-row"><label>Barley Seed Used (kg)</label><input type="number" id="fg-seed" placeholder="115"></div>
+      </div>
+      <div class="form-row"><label>Notes / Issues</label><textarea id="fg-notes" placeholder="Any observations about tray quality, mould, temperature issues..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-feedgrow')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFeedgrow()">Save Reading</button>
+    </div>
+  </div>
+</div>
+
+<!-- Feed Delivery -->
+<div class="modal-overlay" id="modal-feed">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Log Feed Delivery Run</span>
+      <button class="modal-close" onclick="closeModal('modal-feed')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label>Camp</label>
+          <select id="fd-camp">
+            <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+            <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+            <option>Hospital pen</option><option>Quarantine</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Time</label><input type="time" id="fd-time"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Sprouts Delivered (kg)</label><input type="number" id="fd-sprout" placeholder="1224"></div>
+        <div class="form-row"><label>Production Ration (kg)</label><input type="number" id="fd-ration" placeholder="660"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Roughage / Hay (kg)</label><input type="number" id="fd-hay" placeholder="ad lib"></div>
+        <div class="form-row"><label>Feed Refusal (kg)</label><input type="number" id="fd-refusal" placeholder="0"></div>
+      </div>
+      <div class="form-row"><label>Bunk Condition</label>
+        <select id="fd-bunk">
+          <option>Clean — full intake</option>
+          <option>Partial refusal — check palatability</option>
+          <option>High refusal — investigate</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Notes</label><textarea id="fd-notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-feed')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFeed()">Save Feed Log</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mortality -->
+<div class="modal-overlay" id="modal-mort">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Record Mortality</span>
+      <button class="modal-close" onclick="closeModal('modal-mort')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label>Tag / RFID #</label><input type="text" id="m-tag"></div>
+        <div class="form-row"><label>Camp</label>
+          <select id="m-camp">
+            <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+            <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+            <option>Hospital pen</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Date Found</label><input type="date" id="m-date"></div>
+        <div class="form-row"><label>Estimated Weight (kg)</label><input type="number" id="m-wt"></div>
+      </div>
+      <div class="form-row"><label>Cause of Death</label>
+        <select id="m-cause">
+          <option>BRD — bovine respiratory disease</option>
+          <option>Bloat — acute</option>
+          <option>Acidosis / grain overload</option>
+          <option>Trauma / injury</option>
+          <option>Unknown — post-mortem required</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Disposition</label>
+        <select id="m-disp">
+          <option>Knacker / rendered</option>
+          <option>Buried on farm</option>
+          <option>Post-mortem (vet)</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Notes</label><textarea id="m-notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-mort')">Cancel</button>
+      <button class="btn btn-danger" onclick="saveMort()">Record Mortality</button>
+    </div>
+  </div>
+</div>
+
+<!-- Movement -->
+<div class="modal-overlay" id="modal-move">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Record Animal Movement</span>
+      <button class="modal-close" onclick="closeModal('modal-move')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row"><label>Tag # (or batch description)</label><input type="text" id="mv-tag"></div>
+      <div class="form-grid">
+        <div class="form-row"><label>From</label>
+          <select id="mv-from">
+            <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+            <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+            <option>Quarantine</option><option>Hospital pen</option><option>Arrival (trucks)</option>
+          </select>
+        </div>
+        <div class="form-row"><label>To</label>
+          <select id="mv-to">
+            <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+            <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+            <option>Quarantine</option><option>Hospital pen</option><option>Loading ramp (departure)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row"><label>Reason</label>
+        <select id="mv-reason">
+          <option>New batch arrival</option>
+          <option>Quarantine cleared — move to production</option>
+          <option>Health — hospitalise</option>
+          <option>Health — return to camp</option>
+          <option>Sorting / regrouping</option>
+          <option>Departure to abattoir</option>
+        </select>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Number of Animals</label><input type="number" id="mv-n" value="1"></div>
+        <div class="form-row"><label>Avg Weight (kg)</label><input type="number" id="mv-wt"></div>
+      </div>
+      <div class="form-row"><label>Recorded By</label><input type="text" id="mv-by"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-move')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMove()">Save Movement</button>
+    </div>
+  </div>
+</div>
+
+<!-- Water Inspection -->
+<div class="modal-overlay" id="modal-water">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Log Water & Shade Inspection</span>
+      <button class="modal-close" onclick="closeModal('modal-water')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label>Camp</label>
+          <select id="wt-camp">
+            <option>All camps (full inspection)</option>
+            <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+            <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Date / Time</label><input type="datetime-local" id="wt-dt"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Reservoir Level (kL)</label><input type="number" id="wt-res" placeholder="214"></div>
+        <div class="form-row"><label>Borehole Status</label>
+          <select id="wt-bore"><option>Online — OK</option><option>Online — low yield</option><option>Offline</option></select>
+        </div>
+      </div>
+      <div class="form-row"><label>Trough condition</label>
+        <select id="wt-trough">
+          <option>All clean and flowing</option>
+          <option>1–2 troughs need cleaning</option>
+          <option>Float valve issue — camp:</option>
+          <option>Trough empty — urgent</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Shade Cloth Condition</label>
+        <select id="wt-shade">
+          <option>All intact</option>
+          <option>Minor wear — monitor</option>
+          <option>Repair needed — camp:</option>
+          <option>Urgent replacement required</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Notes / Actions Required</label><textarea id="wt-notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-water')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveWater()">Save Inspection</button>
+    </div>
+  </div>
+</div>
+
+<!-- Alert -->
+<div class="modal-overlay" id="modal-alert">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Raise Alert</span>
+      <button class="modal-close" onclick="closeModal('modal-alert')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label>Camp</label>
+          <select id="al-camp">
+            <option>All camps</option>
+            <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+            <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+            <option>Hospital pen</option><option>FeedGrow units</option><option>Infrastructure</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Severity</label>
+          <select id="al-sev">
+            <option>🟢 Info</option><option>🟡 Warning</option><option>🔴 Urgent</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row"><label>Alert Description</label><textarea id="al-desc" placeholder="Describe the issue..."></textarea></div>
+      <div class="form-row"><label>Raised By</label><input type="text" id="al-by"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-alert')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAlert()">Raise Alert</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cost entry -->
+<div class="modal-overlay" id="modal-cost">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Cost Entry</span>
+      <button class="modal-close" onclick="closeModal('modal-cost')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row"><label>Category</label>
+        <select id="c-cat">
+          <option>Barley seed (FeedGrow)</option>
+          <option>Production ration</option>
+          <option>Roughage / hay</option>
+          <option>Electricity</option>
+          <option>Labour</option>
+          <option>Vet & medications</option>
+          <option>Transport</option>
+          <option>Repairs & maintenance</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Date</label><input type="date" id="c-date"></div>
+        <div class="form-row"><label>Amount (R)</label><input type="number" id="c-amt" placeholder="0.00"></div>
+      </div>
+      <div class="form-row"><label>Supplier / Reference</label><input type="text" id="c-ref"></div>
+      <div class="form-row"><label>Notes</label><textarea id="c-notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-cost')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCost()">Save Cost</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+const state = {
+  logs: [],
+  healthRecords: [],
+  treatments: [],
+  movements: [],
+  costs: []
+};
+
+// ── INIT ──
+function init() {
+  const now = new Date();
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  document.getElementById('sidebar-date').textContent = now.toLocaleDateString('en-ZA', opts);
+  document.getElementById('today-date').textContent = now.toLocaleDateString('en-ZA');
+  const today = now.toISOString().split('T')[0];
+  document.querySelectorAll('[id$="-date"]').forEach(el => { if(el.tagName === 'INPUT' && el.type === 'date') el.value = today; });
+  document.querySelectorAll('[id$="-dt"]').forEach(el => { if(el.tagName === 'INPUT') el.value = now.toISOString().slice(0,16); });
+
+  const t = now.toLocaleDateString('en-ZA');
+  ['today-td1','today-td2','today-td3','today-td4'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = t;
+  });
+
+  buildCamps();
+  renderLogs();
+}
+
+// ── NAVIGATION ──
+const panelTitles = {
+  dashboard: 'Dashboard',
+  camps: 'Camps & Herd',
+  daily: 'Daily Activity Log',
+  feeding: 'FeedGrow & Feeding',
+  weighing: 'Weighing & ADG',
+  health: 'Health Records',
+  treatments: 'Treatments & Medications',
+  mortalities: 'Mortality Register',
+  movements: 'Animal Movements',
+  water: 'Water & Shade',
+  finance: 'Finance & Costs',
+  reports: 'Reports'
+};
+
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('panel-title').textContent = panelTitles[name] || name;
+  event.currentTarget.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── MODALS ──
+function showModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); });
+});
+
+// ── BUILD CAMPS ──
+const campData = [
+  {id:'A1', head:120, dof:62, adg:1.72, status:'Good', type:'prod'},
+  {id:'A2', head:120, dof:62, adg:1.65, status:'Good', type:'prod'},
+  {id:'A3', head:120, dof:62, adg:1.58, status:'Monitor', type:'prod'},
+  {id:'A4', head:120, dof:62, adg:1.70, status:'Good', type:'prod'},
+  {id:'B1', head:120, dof:62, adg:1.69, status:'Good', type:'prod'},
+  {id:'B2', head:116, dof:62, adg:1.52, status:'Alert', type:'prod'},
+  {id:'B3', head:120, dof:62, adg:1.71, status:'Good', type:'prod'},
+  {id:'B4', head:120, dof:62, adg:1.68, status:'Good', type:'prod'},
+  {id:'Quar', head:24, dof:14, adg:0, status:'Quarantine', type:'quar'},
+  {id:'Hosp', head:3, dof:0, adg:0, status:'Hospital', type:'hosp'},
+];
+
+function buildCamps() {
+  const grid = document.getElementById('camps-grid');
+  grid.innerHTML = campData.map(c => {
+    const cls = c.type === 'quar' ? 'pen-quar' : c.type === 'hosp' ? 'pen-hosp' : '';
+    const badgeCls = c.type === 'quar' ? 'quar' : c.type === 'hosp' ? 'hosp' : '';
+    const badgeTxt = c.type === 'quar' ? 'Quarantine' : c.type === 'hosp' ? 'Hospital' : c.status;
+    const health = c.adg > 0 ? Math.min(100, Math.round((c.adg / 1.95) * 100)) : 80;
+    const statusColor = c.status === 'Good' ? 'var(--grass)' : c.status === 'Alert' ? 'var(--red)' : c.status === 'Monitor' ? 'var(--amber)' : 'var(--sky)';
+    return `<div class="camp-card ${cls}" onclick="showCampDetail('${c.id}')">
+      <div class="camp-card-header">
+        <div class="camp-name">Camp ${c.id}</div>
+        <span class="camp-badge ${badgeCls}">${badgeTxt}</span>
+      </div>
+      <div class="camp-stat"><span>Head count</span><span>${c.head}</span></div>
+      <div class="camp-stat"><span>Days on feed</span><span>${c.dof}</span></div>
+      ${c.adg > 0 ? `<div class="camp-stat"><span>Avg ADG</span><span style="color:${statusColor}">${c.adg} kg/day</span></div>` : ''}
+      ${c.adg > 0 ? `<div class="camp-stat"><span>Est. exit wt</span><span>${Math.round(232 + c.adg * 150)} kg</span></div>` : ''}
+      <div class="camp-health-bar"><div class="camp-health-fill" style="width:${health}%;background:${statusColor}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function showCampDetail(id) {
+  alert(`Camp ${id} — detailed view.\n\nIn a full deployment, this would open a dedicated camp page showing individual animal records, weight history chart, feeding schedule, and health events specific to this camp.`);
+}
+
+// ── LOG ──
+const logColors = {
+  'Visual check': 'var(--grass)',
+  'Feed run (TMR)': 'var(--amber)',
+  'FeedGrow harvest / reload': 'var(--grass)',
+  'Water trough check': 'var(--sky)',
+  'Treatment administered': 'var(--red)',
+  'Weighing': 'var(--teal)',
+  'Animal movement': 'var(--rust)',
+  'Pen scraping / cleaning': 'var(--bark)',
+  'Shade inspection': 'var(--amber)',
+  'Maintenance': 'var(--bark)',
+  'Other': 'var(--text-muted)'
+};
+
+function saveLog() {
+  const entry = {
+    time: document.getElementById('log-time').value || '00:00',
+    camp: document.getElementById('log-camp').value,
+    type: document.getElementById('log-type').value,
+    notes: document.getElementById('log-notes').value,
+    staff: document.getElementById('log-staff').value,
+    date: document.getElementById('log-date').value
+  };
+  state.logs.unshift(entry);
+  renderLogs();
+  closeModal('modal-log');
+  document.getElementById('log-notes').value = '';
+  document.getElementById('log-staff').value = '';
+}
+
+function renderLogs() {
+  const container = document.getElementById('daily-log-list');
+  const all = state.logs;
+  if (!all.length) {
+    container.innerHTML = '<div class="log-item"><div class="log-time">—</div><div class="log-dot" style="background:var(--border-strong)"></div><div class="log-content"><div class="log-title" style="color:var(--text-muted)">No entries yet. Click "+ Add Log Entry" to record today\'s activities.</div></div></div>';
+    return;
+  }
+  container.innerHTML = all.map(e => `
+    <div class="log-item">
+      <div class="log-time">${e.time}</div>
+      <div class="log-dot" style="background:${logColors[e.type] || 'var(--text-muted)'}"></div>
+      <div class="log-content">
+        <div class="log-title">${e.type} <span class="log-camp">${e.camp}</span></div>
+        <div class="log-detail">${e.notes || '—'} ${e.staff ? '· ' + e.staff : ''}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── SAVE STUBS ──
+function saveHealth() {
+  const tag = document.getElementById('h-tag').value;
+  const cond = document.getElementById('h-cond').value;
+  const camp = document.getElementById('h-camp').value;
+  if (tag && cond) {
+    const tbody = document.getElementById('health-records');
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${tag}</td><td>${camp}</td><td>${cond}</td><td>Today</td><td>${document.getElementById('h-treat').value || '—'}</td><td>Camp ${camp}</td><td><span class="badge badge-amber">New</span></td>`;
+    tbody.insertBefore(row, tbody.firstChild);
+  }
+  closeModal('modal-health');
+  showConfirm('Health event recorded.');
+}
+
+function saveTreatment() {
+  const tag = document.getElementById('t-tag').value;
+  const drug = document.getElementById('t-drug').value;
+  if (tag && drug) {
+    const tbody = document.getElementById('treat-log');
+    const row = document.createElement('tr');
+    const today = new Date().toLocaleDateString('en-ZA');
+    row.innerHTML = `<td>${today}</td><td>${tag}</td><td>${document.getElementById('t-camp').value}</td><td>${drug}</td><td>${document.getElementById('t-dose').value}</td><td>${document.getElementById('t-route').value}</td><td>${document.getElementById('t-wd').value} days</td><td>${document.getElementById('t-by').value}</td>`;
+    tbody.insertBefore(row, tbody.firstChild);
+  }
+  closeModal('modal-treat');
+  showConfirm('Treatment recorded.');
+}
+
+function saveWeight() {
+  closeModal('modal-weigh');
+  showConfirm('Weight record saved. ADG will update automatically.');
+}
+
+function saveFeedgrow() {
+  closeModal('modal-feedgrow');
+  showConfirm('FeedGrow reading saved.');
+}
+
+function saveFeed() {
+  const camp = document.getElementById('fd-camp').value;
+  const sprout = document.getElementById('fd-sprout').value;
+  const ration = document.getElementById('fd-ration').value;
+  const time = document.getElementById('fd-time').value;
+  if (camp) {
+    const tbody = document.getElementById('feed-log-body');
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${camp}</td><td>${sprout} kg</td><td>${ration} kg</td><td>ad lib</td><td>${time}</td>`;
+    tbody.insertBefore(row, tbody.firstChild);
+  }
+  closeModal('modal-feed');
+  showConfirm('Feed delivery logged.');
+}
+
+function saveMort() {
+  closeModal('modal-mort');
+  showConfirm('Mortality recorded. Batch head count updated.');
+}
+
+function saveMove() {
+  const tag = document.getElementById('mv-tag').value;
+  const from = document.getElementById('mv-from').value;
+  const to = document.getElementById('mv-to').value;
+  const reason = document.getElementById('mv-reason').value;
+  if (tag) {
+    const tbody = document.getElementById('movement-log');
+    const row = document.createElement('tr');
+    const today = new Date().toLocaleDateString('en-ZA');
+    row.innerHTML = `<td>${today}</td><td>${tag}</td><td>${from}</td><td>${to}</td><td>${reason}</td><td>${document.getElementById('mv-wt').value || '—'} kg</td><td>${document.getElementById('mv-by').value}</td>`;
+    tbody.insertBefore(row, tbody.firstChild);
+  }
+  closeModal('modal-move');
+  showConfirm('Movement recorded.');
+}
+
+function saveWater() {
+  closeModal('modal-water');
+  showConfirm('Water & shade inspection logged.');
+}
+
+function saveAlert() {
+  const desc = document.getElementById('al-desc').value;
+  const camp = document.getElementById('al-camp').value;
+  const sev = document.getElementById('al-sev').value;
+  if (desc) {
+    const list = document.getElementById('alert-list');
+    const cls = sev.includes('🔴') ? 'alert-red' : sev.includes('🟡') ? 'alert-amber' : 'alert-green';
+    const div = document.createElement('div');
+    div.className = `alert ${cls}`;
+    div.innerHTML = `<div><div class="alert-text">${sev} ${camp} — ${desc}</div><div class="alert-meta">Just now · ${document.getElementById('al-by').value}</div></div>`;
+    list.insertBefore(div, list.firstChild);
+  }
+  closeModal('modal-alert');
+  document.getElementById('al-desc').value = '';
+}
+
+function saveCost() {
+  closeModal('modal-cost');
+  showConfirm('Cost entry saved to batch records.');
+}
+
+function showConfirm(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--earth);color:var(--straw);padding:12px 20px;border-radius:var(--radius);font-size:13px;box-shadow:var(--shadow-lg);z-index:999;font-family:"Instrument Sans",sans-serif;';
+  el.textContent = '✓ ' + msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function printReport(type) {
+  const titles = {
+    daily: 'Daily Activity Report',
+    health: 'Health & Welfare Summary',
+    growth: 'Growth & ADG Report',
+    finance: 'Financial Statement',
+    feedgrow: 'FeedGrow Operations Log',
+    compliance: 'NSPCA Compliance Record'
+  };
+  alert(`Generating ${titles[type]}...\n\nIn a full deployment, this would produce a formatted PDF report for ${new Date().toLocaleDateString('en-ZA')} covering all camps and records for the selected report type.\n\nReport type: ${titles[type]}`);
+}
+
+init();
+</script>
+</body>
+</html>
